@@ -20,4 +20,9 @@ To use pizza generator that comes with the bot, create "pizza.txt" and add filli
 One filling/line, no limit on how many lines of fillings. Bot will pick 4 randomly.<br />
 <br />
 <br />
+# Config
+showAnnouncements -> if set to 1 instead of 0, bot will automatically post random lines from jbot/announcements.txt<br />
+announcementTime=60000 -> This is time in milliseconds when bot posts a random line (10 minutes default)
+<br />
+<br />
 You can also use pre-compiled build and see how the config files look like..
