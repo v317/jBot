@@ -2,7 +2,7 @@
 Twitch chat bot made in VB.NET
 
 # Config
-Create "config.txt" and add following lines:
+<b>Create "config.txt" and add following lines:</b>
 <br />
 server=irc.twitch.tv<br />
 port=6667<br />
