@@ -9,6 +9,9 @@ port=6667<br />
 channel=#yourchannel<br />
 botName=YourBotUsername<br />
 oauth=oauth:BotsTokenHere<br />
+showAnnouncements=0<br />
+announcementTime=60000
+<br />
 <br />
 Also create "permissions.txt" and add usernames that you wish to have access to the bot.<br />
 One username/line<br />
