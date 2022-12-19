@@ -1,0 +1,2 @@
+# jBot
+Twitch chat bot
