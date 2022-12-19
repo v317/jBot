@@ -8,11 +8,11 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("jbot")>
+<Assembly: AssemblyTitle("jBot")>
 <Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("HP")>
-<Assembly: AssemblyProduct("jbot")>
-<Assembly: AssemblyCopyright("Copyright © HP 2022")>
+<Assembly: AssemblyCompany("Alt")>
+<Assembly: AssemblyProduct("jBot")>
+<Assembly: AssemblyCopyright("Copyright © Alt 2022")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("1.0.0.0")>
-<Assembly: AssemblyFileVersion("1.0.0.0")>
+<Assembly: AssemblyVersion("0.4")>
+<Assembly: AssemblyFileVersion("0.4")>

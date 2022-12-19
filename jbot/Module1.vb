@@ -1,19 +1,33 @@
-﻿'Alt custom Twitch bot v.0.2
+﻿'---------------------
+'jBot v.0.4 by Alt
+'---------------------
 'Easy to customize!
+'---------------------
 'config.txt for server and bot settings
 'permissions.txt for usernames to have access to the bot!
+'jbot/announcements.txt for automatically posted lines
+'jbot/pizza.txt for toppings for !pizza command....
 '---------------------
+Imports System.Drawing
 Imports System.IO
 Imports System.Net.Sockets
+Imports System.Timers
 
 Module Module1
     Sub Main()
-        Console.Title = "jbot v.0.2"
-
+        Console.Title = "jBot v." & My.Application.Info.Version.ToString
         Console.ForegroundColor = ConsoleColor.Cyan
-        Console.WriteLine("Welcome to jBot by Alt")
+        Console.WriteLine("   _ _____     _   ")
+        Console.WriteLine("  |_| __  |___| |_ ")
+        Console.WriteLine("  | | __ -| . |  _|")
+        Console.WriteLine(" _| |_____|___|_|  ")
+        Console.WriteLine("|___|by Alt v." & My.Application.Info.Version.ToString)
+        Console.WriteLine(" ")
         Console.ResetColor()
         Console.ForegroundColor = ConsoleColor.White
+        Console.WriteLine("Make sure you configure everything properly!" & Environment.NewLine & "* config.txt for bot settings" & Environment.NewLine & "* permissions.txt for user permissions" & Environment.NewLine & "* jbot/pizza.txt for pizza toppings" & Environment.NewLine & "* jbot/announcements.txt for automatically posted lines of text!")
+        Console.ResetColor()
+        Console.ForegroundColor = ConsoleColor.Cyan
         Console.WriteLine("----------------------------")
         Console.ResetColor()
         ' Read the IRC server and port from the config file
@@ -24,9 +38,21 @@ Module Module1
         Dim botName As String = ReadConfigValue("botName")
         ' Read the OAuth token for the bot from the config file
         Dim oauth As String = ReadConfigValue("oauth")
+
         ' Initialize the death count to 0
         Dim deathCount As Integer = 0
-        Dim setCount As Integer = 0
+
+        ' Read the announcements from the "announcements.txt" file
+        Dim announcements As List(Of String) = ReadAnnouncements()
+        ' Initialize the announcement index to 0
+        Dim announcementIndex As Integer = 0
+        ' Check the value of "show-announcements" in the config file
+        Dim showAnnouncements As String = ReadConfigValue("showAnnouncements")
+
+        'Read the announcement timer
+        Dim announcementTimer As Integer = ReadConfigValue("announcementTime")
+
+
 
         ' Connect to the IRC server
         Dim client As New TcpClient(server, port)
@@ -42,7 +68,25 @@ Module Module1
         writer.Flush()
 
         ' Print a message when the bot has connected
-        Console.WriteLine("Connected to " & server & " as " & botName)
+        Console.ForegroundColor = ConsoleColor.White
+        Console.WriteLine("Connected to " & server & " as: " & botName)
+        Console.ResetColor()
+        Console.ForegroundColor = ConsoleColor.Cyan
+        Console.WriteLine("----------------------------")
+        Console.ResetColor()
+
+        ' Set up a timer to send an announcement if "show-announcements" is set to 1 in the config file
+        If showAnnouncements = "1" Then
+            Dim timer As New Threading.Timer(Sub()
+                                                 If announcementIndex >= announcements.Count Then
+                                                     announcementIndex = 0
+                                                 End If
+                                                 Dim announcement As String = announcements(announcementIndex)
+                                                 writer.WriteLine("PRIVMSG " & channel & " :" & announcement)
+                                                 writer.Flush()
+                                                 announcementIndex += 1
+                                             End Sub, Nothing, 0, announcementTimer)
+        End If
 
         ' Keep reading messages from the IRC server
         Dim message As String
@@ -73,11 +117,11 @@ Module Module1
                         ' writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user.ToString)
                         writer.Flush()
                     End If
-                ElseIf words.Contains("test") Then
-                    ' Check if the user has permission to use the "help" command
+                ElseIf words.Contains("jbot") Then
+                    ' Check if the user has permission to use the this command
                     If CheckPermission(user) Then
                         ' Add user
-                        writer.WriteLine("PRIVMSG " & channel & " :Testing testing. Check check...")
+                        writer.WriteLine("PRIVMSG " & channel & " :jBot v." & My.Application.Info.Version.ToString & " by Alt. :)")
                         writer.Flush()
                     Else
                         ' Respond with an error message
@@ -91,21 +135,21 @@ Module Module1
                 ElseIf message.Contains("pizza") Then
                     ' Check if the user has permission to use the "pizza" command
                     If CheckPermission(user) Then
-                        ' Read the list of fillings from the "pizza.txt" file
-                        Dim fillings As String() = File.ReadAllLines("pizza.txt")
+                        ' Read the list of toppings from the "pizza.txt" file
+                        Dim toppings As String() = File.ReadAllLines("jbot/pizza.txt")
                         ' Create a new instance of the Random class
                         Dim rnd As New Random()
                         ' Generate pizza
-                        ' Get 4 random fillings from the list
-                        Dim selectedFillings As New List(Of String)()
+                        ' Get 4 random toppings from the list
+                        Dim selectedtoppings As New List(Of String)()
                         For i As Integer = 0 To 3
-                            Dim index As Integer = rnd.Next(0, fillings.Length)
-                            selectedFillings.Add(fillings(index))
+                            Dim index As Integer = rnd.Next(0, toppings.Length)
+                            selectedtoppings.Add(toppings(index))
                         Next
-                        ' Join the selected fillings into a single string
-                        Dim pizza As String = String.Join(", ", selectedFillings)
+                        ' Join the selected toppings into a single string
+                        Dim pizza As String = String.Join(", ", selectedtoppings)
 
-                        ' Send a message to the channel with the selected fillings
+                        ' Send a message to the channel with the selected toppings
                         writer.WriteLine("PRIVMSG " & channel & " :Tässä sinulle neljän (4) täytteen pizza: " & pizza & " PizzaTime")
                         writer.Flush()
                     Else
@@ -146,5 +190,19 @@ Module Module1
 
         ' Check if the user is in the list of allowed users
         Return permissions.Contains(user)
+    End Function
+    ' Read the announcements from the "announcements.txt" file
+    Function ReadAnnouncements() As List(Of String)
+        Dim announcements As New List(Of String)
+        Using reader As New StreamReader("jbot/announcements.txt")
+            Dim line As String
+            Do
+                line = reader.ReadLine()
+                If line IsNot Nothing Then
+                    announcements.Add(line)
+                End If
+            Loop While line IsNot Nothing
+        End Using
+        Return announcements
     End Function
 End Module
