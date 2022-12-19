@@ -15,3 +15,6 @@ One username/line<br />
 <br />
 To use pizza generator that comes with the bot, create "pizza.txt" and add fillings to this file.<br />
 One filling/line, no limit on how many lines of fillings. Bot will pick 4 randomly.<br />
+<br />
+<br />
+You can also use pre-compiled build and see how the config files look like..
