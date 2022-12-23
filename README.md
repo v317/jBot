@@ -25,4 +25,4 @@ showAnnouncements -> if set to 1 instead of 0, bot will automatically post rando
 announcementTime=10 -> This is time in minutes when bot posts a random line (10 minutes default)
 <br />
 <br />
-You can also use pre-compiled build and see how the config files look like..
+<b>Pre-compiled release comes with all the files, so you only have to configure it!</b>
