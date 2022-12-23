@@ -1,5 +1,5 @@
 ﻿'---------------------
-'jBot v.0.4 by Alt
+'jBot by Alt
 '---------------------
 'Easy to customize!
 '---------------------
@@ -11,7 +11,9 @@
 Imports System.Drawing
 Imports System.IO
 Imports System.Net.Sockets
+Imports System.Threading
 Imports System.Timers
+Imports System.Globalization
 
 Module Module1
     Sub Main()
@@ -22,10 +24,10 @@ Module Module1
         Console.WriteLine("  | | __ -| . |  _|")
         Console.WriteLine(" _| |_____|___|_|  ")
         Console.WriteLine("|___|by Alt v." & My.Application.Info.Version.ToString)
-        Console.WriteLine(" ")
+        Console.WriteLine("----------------------------")
         Console.ResetColor()
         Console.ForegroundColor = ConsoleColor.White
-        Console.WriteLine("Make sure you configure everything properly!" & Environment.NewLine & "* config.txt for bot settings" & Environment.NewLine & "* permissions.txt for user permissions" & Environment.NewLine & "* jbot/pizza.txt for pizza toppings" & Environment.NewLine & "* jbot/announcements.txt for automatically posted lines of text!")
+        Console.WriteLine("Make sure you configure everything properly!" & Environment.NewLine & "* config.txt for bot settings" & Environment.NewLine & "* permissions.txt for user permissions" & Environment.NewLine & "* jbot/pizza.txt for pizza toppings" & Environment.NewLine & "* jbot/announcements.txt for automatically posted lines of text!" & Environment.NewLine & "* jbot/deaths.txt for death counter deaths")
         Console.ResetColor()
         Console.ForegroundColor = ConsoleColor.Cyan
         Console.WriteLine("----------------------------")
@@ -50,7 +52,7 @@ Module Module1
         Dim showAnnouncements As String = ReadConfigValue("showAnnouncements")
 
         'Read the announcement timer
-        Dim announcementTimer As Integer = ReadConfigValue("announcementTime")
+        Dim announcementTimer As Integer = 1000 * 60 * ReadConfigValue("announcementTime")
 
 
 
@@ -89,79 +91,169 @@ Module Module1
         End If
 
         ' Keep reading messages from the IRC server
-        Dim message As String
-        Do
-            message = reader.ReadLine()
-            If message IsNot Nothing Then
-                ' Print the message to the console
-                Console.WriteLine(message)
+        Try
+            Dim message As String
+            Do
 
-                ' Split the message into words
-                Dim words As String() = message.Split("!")
 
-                ' Get the user who sent the message
-                Dim user As String = words(0).Split(" ")(0).Substring(1)
 
-                ' Check for the word "death"
-                If words.Contains("death") Then
-                    ' Check if the user has permission to use the "death" command
-                    If CheckPermission(user) Then
-                        ' Increment the death count
-                        deathCount += 1
+                message = reader.ReadLine()
+                If message IsNot Nothing Then
+                    ' Print the message to the console
+                    Console.WriteLine(message)
 
-                        ' Respond with the current death count
-                        writer.WriteLine("PRIVMSG " & channel & " :Kuolemia: " & deathCount)
-                        writer.Flush()
-                    Else
-                        ' Respond with an error message
-                        ' writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user.ToString)
-                        writer.Flush()
-                    End If
-                ElseIf words.Contains("jbot") Then
-                    ' Check if the user has permission to use the this command
-                    If CheckPermission(user) Then
-                        ' Add user
-                        writer.WriteLine("PRIVMSG " & channel & " :jBot v." & My.Application.Info.Version.ToString & " by Alt. :)")
-                        writer.Flush()
-                    Else
-                        ' Respond with an error message
-                        'writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user.ToString)
-                        writer.Flush()
-                    End If
-                ElseIf message.StartsWith("PING") Then
-                    ' Send a PONG response back to the server
-                    writer.WriteLine("PONG " & message.Substring(5))
-                    writer.Flush()
-                ElseIf message.Contains("pizza") Then
-                    ' Check if the user has permission to use the "pizza" command
-                    If CheckPermission(user) Then
-                        ' Read the list of toppings from the "pizza.txt" file
-                        Dim toppings As String() = File.ReadAllLines("jbot/pizza.txt")
-                        ' Create a new instance of the Random class
-                        Dim rnd As New Random()
-                        ' Generate pizza
-                        ' Get 4 random toppings from the list
-                        Dim selectedtoppings As New List(Of String)()
-                        For i As Integer = 0 To 3
-                            Dim index As Integer = rnd.Next(0, toppings.Length)
-                            selectedtoppings.Add(toppings(index))
-                        Next
-                        ' Join the selected toppings into a single string
-                        Dim pizza As String = String.Join(", ", selectedtoppings)
+                    ' Split the message into words
+                    Dim words As String() = message.Split("!")
 
-                        ' Send a message to the channel with the selected toppings
-                        writer.WriteLine("PRIVMSG " & channel & " :Tässä sinulle neljän (4) täytteen pizza: " & pizza & " PizzaTime")
+                    ' Get the user who sent the message
+                    Dim user As String = words(0).Split(" ")(0).Substring(1)
+
+                    ' ________                 __.__            
+                    '\______ \   ____ _____ _/  |_|  |__   ______
+                    ' |    |  \_/ __ \\__  \\   __\  |  \ /  ___/
+                    ' |    `   \  ___/ / __ \|  | |   Y  \\___ \ 
+                    '/_______  /\___  >____  /__| |___|  /____  >
+                    '        \/     \/     \/          \/     \/ 
+                    'Death counter -> Type !death -> Deaths will increase by +1. To reset deaths, write 0 to deaths.txt.
+
+                    ' Check for the word "death"
+                    If words.Contains("death") Then
+                        ' Check if the user has permission to use the "death" command
+
+                        ' Check if the deaths.txt file exists
+                        If Not File.Exists("jbot/deaths.txt") Then
+                            ' If the file does not exist, create it and write 0 to it
+                            File.WriteAllText("jbot/deaths.txt", "0")
+                        End If
+
+                        If CheckPermission(user) Then
+                            ' Read the death count from the file
+                            deathCount = Convert.ToInt32(File.ReadAllText("jbot/deaths.txt"))
+                            ' Increment the death count
+                            deathCount += 1
+
+                            ' Respond with the current death count
+                            writer.WriteLine("PRIVMSG " & channel & " :Kuolemia: " & deathCount)
+                            ' Write the death count to the file
+                            File.WriteAllText("jbot/deaths.txt", deathCount.ToString())
+                            writer.Flush()
+                        Else
+                            ' Respond with an error message
+                            ' writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user.ToString)
+                            writer.Flush()
+                        End If
+
+                        '   __________
+                        '  /  _  \\_ |__   ____  __ ___/  |_ 
+                        ' /  /_\  \| __ \ /  _ \|  |  \   __\
+                        '/    |    \ \_\ (  <_> )  |  /|  |  
+                        '\____|__  /___  /\____/|____/ |__|  
+                        '        \/    \/                    
+                    ElseIf words.Contains("jbot") Then
+                        ' Check if the user has permission to use the this command
+                        If CheckPermission(user) Then
+                            ' Add user
+                            writer.WriteLine("PRIVMSG " & channel & " :jBot v." & My.Application.Info.Version.ToString & " by Alt. Botti on kehityksessä ja komennot vaativat käyttöoikeuden. Käyttöoikeus voidaan myöntää luotettaville henkilöille. Striimaaja määrittää itse, kuka on luotettava ja kuka ei.")
+                            writer.Flush()
+                        End If
+
+                        '__________
+                        '\______   \____   ____    ____  
+                        ' |     ___/  _ \ /    \  / ___\ 
+                        ' |    |  (  <_> )   |  \/ /_/  >
+                        '|____|   \____/|___|  /\___  / 
+                        '                     \//_____/  
+                        'This sends PONG back to Twitch server when PING is received.
+                    ElseIf message.StartsWith("PING") Then
+                        ' Send a PONG response back to the server
+                        writer.WriteLine("PONG " & message.Substring(5))
                         writer.Flush()
-                    Else
-                        ' Respond with an error message
-                        'writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user)
-                        writer.Flush()
+                        '__________.__
+                        '\______   \__|____________________   
+                        ' |     ___/  \___   /\___   /\__  \  
+                        ' |    |   |  |/    /  /    /  / __ \_
+                        ' |____|   |__/_____ \/_____ \(____  /
+                        '                  \/      \/     \/ 
+                        'Pizza Generator is a popular feature in my bots so of course jBot has one too!
+                        'Add toppings to pizza.txt and let bot generate 4 topping pizza for you.
+                    ElseIf message.Contains("pizza") Then
+                        ' Check if the user has permission to use the "pizza" command
+                        If CheckPermission(user) Then
+                            ' Read the list of toppings from the "pizza.txt" file
+                            Dim toppings As String() = File.ReadAllLines("jbot/pizza.txt")
+                            ' Create a new instance of the Random class
+                            Dim rnd As New Random()
+                            ' Generate pizza
+                            ' Get 4 random toppings from the list
+                            Dim selectedtoppings As New List(Of String)()
+                            For i As Integer = 0 To 3
+                                Dim index As Integer = rnd.Next(0, toppings.Length)
+                                selectedtoppings.Add(toppings(index))
+                            Next
+                            ' Join the selected toppings into a single string
+                            Dim pizza As String = String.Join(", ", selectedtoppings)
+
+                            ' Send a message to the channel with the selected toppings
+                            writer.WriteLine("PRIVMSG " & channel & " :Tässä sinulle neljän (4) täytteen pizza: " & pizza & " PizzaTime")
+                            writer.Flush()
+                        Else
+                            ' Respond with an error message
+                            'writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user)
+                            writer.Flush()
+
+                        End If
+                        '___________.__
+                        '\__    ___/|__| _____   ____  
+                        ' |    |   |  |/     \_/ __ \ 
+                        ' |    |   |  |  Y Y  \  ___/ 
+                        ' |____|   |__|__|_|  /\___  >
+                        '                   \/     \/ 
+                        'Displays the current time
+                    ElseIf message.Contains("time") Then
+                        ' Check if the user has permission to use the "time" command
+                        If CheckPermission(user) Then
+                            Dim currentTime As String = DateTime.Now.ToString("HH:mm:ss tt")
+                            ' Send the current time as a message
+                            writer.WriteLine("PRIVMSG " & channel & " :" & currentTime)
+                            writer.Flush()
+                        Else
+                            ' Respond with an error message
+                            'writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user)
+                            writer.Flush()
+                        End If
+                        '_________.          .__.__
+                        '/  __  \_ |__ _____  |  | |  |  
+                        ' >      <| __ \\__  \ |  | |  |  
+                        '/   --   \ \_\ \/ __ \|  |_|  |__
+                        '\______  /___  (____  /____/____/
+                        '       \/    \/     \/           
+                        'Ask the mighty 8 ball
+                    ElseIf message.Contains("8ball") Then
+                        ' Check if the user has permission to use the "8ball" command
+                        If CheckPermission(user) Then
+                            ' Read the list of answers from the "8ball.txt" file
+                            Dim answers As String() = File.ReadAllLines("jbot/8ball.txt")
+                            ' Create a new instance of the Random class
+                            Dim rnd As New Random()
+                            ' Generate a random answer
+                            Dim index As Integer = rnd.Next(0, answers.Length)
+                            Dim answer As String = answers(index)
+
+                            ' Send the answer to the channel
+                            writer.WriteLine("PRIVMSG " & channel & " :" & answer)
+                            writer.Flush()
+                        Else
+                            ' Respond with an error message
+                            'writer.WriteLine("PRIVMSG " & channel & " :Oops! You don't have permissions to use this command, @" & user)
+                            writer.Flush()
+                        End If
                     End If
                 End If
-            End If
 
-        Loop Until message Is Nothing
-
+            Loop Until message Is Nothing
+        Catch ex As Exception
+            Console.WriteLine("You encounted a known bug. Restart the bot to fix this issue..")
+        End Try
     End Sub
 
     ''' <summary>
