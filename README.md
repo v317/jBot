@@ -10,7 +10,7 @@ channel=#yourchannel<br />
 botName=YourBotUsername<br />
 oauth=oauth:BotsTokenHere<br />
 showAnnouncements=0<br />
-announcementTime=60000
+announcementTime=10
 <br />
 <br />
 Also create "permissions.txt" and add usernames that you wish to have access to the bot.<br />
@@ -22,7 +22,7 @@ One filling/line, no limit on how many lines of fillings. Bot will pick 4 random
 <br />
 # Config
 showAnnouncements -> if set to 1 instead of 0, bot will automatically post random lines from jbot/announcements.txt<br />
-announcementTime=60000 -> This is time in milliseconds when bot posts a random line (10 minutes default)
+announcementTime=10 -> This is time in minutes when bot posts a random line (10 minutes default)
 <br />
 <br />
 You can also use pre-compiled build and see how the config files look like..
