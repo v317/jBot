@@ -18,6 +18,7 @@ One username/line<br />
 <br />
 To use pizza generator that comes with the bot, create "pizza.txt" and add fillings to this file.<br />
 One filling/line, no limit on how many lines of fillings. Bot will pick 4 randomly.<br />
+Bot also comes with 8ball etc. Most commands are in Finnish language by default for pre-compiled build.<br />
 <br />
 <br />
 # Config
